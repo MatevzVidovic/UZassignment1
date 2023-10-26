@@ -144,33 +144,33 @@ def otsu_get_bin(H):
 
 
         var_between = background_percentage * foreground_percentage * (background_mean - foreground_mean)**2
-        if (T%50 == 0):
-            print("\n")
-            print("T = " + str(T))
-            print("var_between = " + str(var_between))
+        # if (T%50 == 0):
+        #     print("\n")
+        #     print("T = " + str(T))
+        #     print("var_between = " + str(var_between))
         
         if var_between > max_var_between:
             max_var_between = var_between
             best_T = T
     
-            informative_string = """background_percentage
-            foreground_percentage
-            background_weighted_values.sum()
-            background_weighted_values.sum()
-            background_mean
-            foreground_mean
-            var_between
-            T"""
+            # informative_string = """background_percentage
+            # foreground_percentage
+            # background_weighted_values.sum()
+            # background_weighted_values.sum()
+            # background_mean
+            # foreground_mean
+            # var_between
+            # T"""
 
-            print(informative_string)
-            print(background_percentage)
-            print(foreground_percentage)
-            print(background_weighted_values.sum())
-            print(background_weighted_values.sum())
-            print(background_mean)
-            print(foreground_mean)
-            print(var_between)
-            print(T)
+            # print(informative_string)
+            # print(background_percentage)
+            # print(foreground_percentage)
+            # print(background_weighted_values.sum())
+            # print(background_weighted_values.sum())
+            # print(background_mean)
+            # print(foreground_mean)
+            # print(var_between)
+            # print(T)
 
 
     return best_T
@@ -219,33 +219,33 @@ def otsu_get_bin2(H, num):
 
 
         var_between = background_numerus * foreground_numerus * (background_mean - foreground_mean)**2
-        if (T%50 == 0):
-            print("\n")
-            print("T = " + str(T))
-            print("var_between = " + str(var_between))
+        # if (T%50 == 0):
+        #     print("\n")
+        #     print("T = " + str(T))
+        #     print("var_between = " + str(var_between))
         
         if var_between > max_var_between:
             max_var_between = var_between
             best_T = T
     
-            informative_string = """background_percentage
-            foreground_percentage
-            background_weighted_values.sum()
-            background_weighted_values.sum()
-            background_mean
-            foreground_mean
-            var_between
-            T"""
+            # informative_string = """background_percentage
+            # foreground_percentage
+            # background_weighted_values.sum()
+            # background_weighted_values.sum()
+            # background_mean
+            # foreground_mean
+            # var_between
+            # T"""
 
-            print(informative_string)
-            print(background_numerus)
-            print(foreground_numerus)
-            print(background_weighted_values.sum())
-            print(background_weighted_values.sum())
-            print(background_mean)
-            print(foreground_mean)
-            print(var_between)
-            print(T)
+            # print(informative_string)
+            # print(background_numerus)
+            # print(foreground_numerus)
+            # print(background_weighted_values.sum())
+            # print(background_weighted_values.sum())
+            # print(background_mean)
+            # print(foreground_mean)
+            # print(var_between)
+            # print(T)
 
 
     return best_T
@@ -340,7 +340,7 @@ def plot_both_types_of_histograms(I_gray, num_of_bins = 100):
     # print(H)
     plt.show()
 
-def otsu_test(num_of_bins=1000):
+def otsu_test(num_of_bins=256):
     
     img_names = ["umbrellas.jpg", "bird.jpg", "candy.jpg", "eagle.jpg", "mask.png"]
     for name in img_names:
