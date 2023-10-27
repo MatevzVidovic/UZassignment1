@@ -202,6 +202,27 @@ def closing(I_gray, n=5):
     return I_closed
 
 
+
+def invert_mask(I_mask):
+    new_mask = 1-I_mask[:,:]
+    return new_mask
+
+def immask(I_three_channel, I_mask):
+    
+    new_shape = (I_mask.shape[0], I_mask.shape[1], 3)
+    I_3chan_mask = np.zeros(new_shape)
+    
+    for i in range(3):
+        I_3chan_mask[:,:,i] = I_mask[:,:]
+    # print(I_3chan_mask)
+
+    I_masked_three_channel = I_three_channel * I_3chan_mask
+    return I_masked_three_channel
+
+
+
+
+
 def test_opps():
     I = imread(".\\images\\mask.png")
     # imshow(I)
@@ -233,6 +254,11 @@ def test_opps():
 
 
 
+def show(I):
+    plt.imshow(I, cmap='gray')
+    plt.show()
+
+
 # Excercise 3, task (a)
 if False:
 
@@ -259,9 +285,7 @@ if False:
 
 
 
-def show(I):
-    plt.imshow(I, cmap='gray')
-    plt.show()
+
 
 
 # Exercise 3, task (b)
@@ -293,24 +317,83 @@ if False:
 
 
 
+
+# Excercise 3, task (c) and (d)
+if False:
+
+    I_eagle = imread(".\\images\\eagle.jpg")
+    I_eagle_gray = np.sum(I_eagle, axis=2) / 3
+    I_eagle_mask = treshold_mask(I_eagle_gray, otsu_treshold(I_eagle_gray, 256))
+    
+    # I_eagle_mask = invert_mask(I_eagle_mask)
+    I_eagle_masked = immask(I_eagle, I_eagle_mask)
+
+    # imshow(I_eagle_masked)
+    plt.imshow(I_eagle_masked)
+    plt.show()
+
+
+
+    I_eagle = imread(".\\moje_slike\\svetla.jpg")
+    I_eagle_gray = np.sum(I_eagle, axis=2) / 3
+    I_eagle_mask = treshold_mask(I_eagle_gray, otsu_treshold(I_eagle_gray, 256))
+    
+    # I_eagle_mask = invert_mask(I_eagle_mask)
+    I_eagle_masked = immask(I_eagle, I_eagle_mask)
+
+    # imshow(I_eagle_masked)
+    plt.imshow(I_eagle_masked)
+    plt.show()
+
+
+
+
+
+
+
+# Excercise 3, task (e)
+
 I_coins = imread(".\\images\\coins.jpg")
 I_coins_gray = np.sum(I_coins, axis=2) / 3
-
-# show(I_coins)
-# show(I_coins_gray)
-
 I_coins_mask = treshold_mask(I_coins_gray, otsu_treshold(I_coins_gray, 256))
-# show(I_coins_mask)
-
 I_opened = opening(I_coins_mask, 7)
-# show(I_opened)
 I_opened = opening(I_opened, 9)
-# show(I_opened)
 
-# labels = np.array()
-# stats = np.array()
-# centroids = np.array
+I_opened = invert_mask(I_opened)
+
 I_opened = I_opened.astype('uint8')
-print(cv2.connectedComponentsWithStats(I_opened))
+returned_data = cv2.connectedComponentsWithStats(I_opened)
+num_of_components = returned_data[0]
+labels = returned_data[1]
+stats = returned_data[2]
+centroids = returned_data[3]
 
-print(labels, stats, centroids)
+for i in range (1, num_of_components):
+    if(stats[(i, cv2.CC_STAT_AREA)] > 700):
+        ix_left = stats[(i, cv2.CC_STAT_LEFT)]
+        ix_right = stats[(i, cv2.CC_STAT_LEFT)] + stats[(i, cv2.CC_STAT_WIDTH)]
+        ix_top = stats[(i, cv2.CC_STAT_TOP)]
+        ix_bottom = stats[(i, cv2.CC_STAT_TOP)] + stats[(i, cv2.CC_STAT_HEIGHT)]
+        
+        # tole pa ne dela for some reason:
+        # I_opened[ix_top:ix_bottom][ix_left:ix_right] = 0
+        I_opened[ix_top:ix_bottom, ix_left:ix_right] = 0
+
+        """
+        stats = CC_STAT_LEFT Python: cv.CC_STAT_LEFT
+        The leftmost (x) coordinate which is the inclusive start of the bounding box in the horizontal direction.
+        CC_STAT_TOP Python: cv.CC_STAT_TOP
+        CC_STAT_WIDTH 
+        Python: cv.CC_STAT_WIDTH
+        The horizontal size of the bounding box.
+        CC_STAT_HEIGHT 
+        Python: cv.CC_STAT_HEIGHT
+        The vertical size of the bounding box.
+        CC_STAT_AREA The total area (in pixels)
+        """
+        
+
+imshow(I_opened)
+
+I_small_coins = immask(I_coins, I_opened)
+imshow(I_small_coins)
