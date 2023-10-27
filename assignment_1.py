@@ -99,14 +99,13 @@ def myhist_dynamic(I_gray, num_of_bins):
 
     return H
 
-def plot_histogram(histogram):
+def plot_histogram(histogram, title=""):
     plt.clf()
     
     H = histogram
     plt.subplot(1, 1, 1)
-    plt.title("Excercise 2, task (b)")
+    plt.title(title)
     plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
-    # print(H)
     plt.show()
 
 def otsu_get_bin(H):
@@ -268,109 +267,95 @@ def otsu_treshold(I_gray, num_of_bins):
 
 
 
-def old_otsu_get_bin(H):
-    # Returns the index of the first bin on the right side of the divide.
-    # Returns in the range 1 to (num_of_bins-1).
-    # We disallowed the value (num_of_bins), which would mean all bars are on the left.
-    # We decided to not count this as a valid treshold, because it doesn't actually separate anything.
-    # It also seems that mathematically taking a single bar from the right would for sure make the varience smaller.
-    # On top of that it causes warnings and division by zero in the code.
 
-    # https://en.wikipedia.org/wiki/Otsu%27s_method
+
+
+def erosion(I_gray, n=5):
+    SE = np.ones((n,n)) # create a square structuring element
+    I_eroded = cv2.erode(I_gray, SE)
+    return I_eroded
+
+def dilation(I_gray, n=5):
+    SE = np.ones((n,n)) # create a square structuring element
+    I_dilated = cv2.dilate(I_gray, SE)
+    return I_dilated
+
+def opening(I_gray, n=5):
+    I_opened = dilation(erosion(I_gray, n), n)
+    return I_opened
+
+def closing(I_gray, n=5):
+    I_closed = erosion(dilation(I_gray, n), n)
+    return I_closed
+
+
+
+
+def erosion_ellipse(I_gray, n1=5, n2=5):
+    SE = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(n1,n2))
+    I_eroded = cv2.erode(I_gray, SE)
+    return I_eroded
+
+def dilation_ellipse(I_gray, n1=5, n2=5):
+    SE = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(n1,n2))
+    I_dilated = cv2.dilate(I_gray, SE)
+    return I_dilated
+
+def opening_ellipse(I_gray, n1=5, n2=5):
+    I_opened = dilation_ellipse(erosion_ellipse(I_gray, n1, n2), n1, n2)
+    return I_opened
+
+def closing_ellipse(I_gray, n1=5, n2=5):
+    I_closed = erosion_ellipse(dilation_ellipse(I_gray, n1, n2), n1, n2)
+    return I_closed
+
+
+
+
+def show(I):
+    plt.imshow(I, cmap='gray')
+    plt.show()
+
+
+def invert_mask(I_mask):
+    new_mask = 1-I_mask[:,:]
+    return new_mask
+
+def immask(I_three_channel, I_mask):
     
-    # https://www.youtube.com/watch?v=jUUkMaNuHP8
-
+    new_shape = (I_mask.shape[0], I_mask.shape[1], 3)
+    I_3chan_mask = np.zeros(new_shape)
     
-    num_of_bins = H.shape[1]
-    max_var_between = -1
-    best_T = -1
-    for T in range(1, num_of_bins):
-        var_between = np.sum(H[1][0:T]) * np.sum(H[1][T:]) * (np.mean(H[1][0:T]) - np.mean(H[1][T:]))**2
-        if var_between > max_var_between:
-            max_var_between = var_between
-            best_T = T
+    for i in range(3):
+        I_3chan_mask[:,:,i] = I_mask[:,:]
+
+    I_masked_three_channel = I_three_channel * I_3chan_mask
+    return I_masked_three_channel
+
+def immask_white_background(I_three_channel, I_mask):
     
-    return best_T
-
-def old_otsu_treshold(I_gray, num_of_bins):
-    H = myhist(I_gray, num_of_bins)
-    bin = old_otsu_get_bin(H)
+    new_shape = (I_mask.shape[0], I_mask.shape[1], 3)
+    I_3chan_mask = np.zeros(new_shape)
     
-    # this dinds the value that separates the bars correctly.
-    # It averages the centre values of the bars between which the treshold is.
-    # We can see this as: (left_upper_bar_val+divider/2 + left_upper_bar_val-divider/2)/2
-    treshold = (H[0][bin] + H[0][bin-1])/2
-
-    return treshold
-
-def old_otsu_test(num_of_bins=300):
+    for i in range(3):
+        I_3chan_mask[:,:,i] = I_mask[:,:]
     
-    img_names = ["umbrellas.jpg", "bird.jpg", "candy.jpg", "eagle.jpg", "mask.png"]
-    for name in img_names:
-        path = ".\\images\\" + name
-        I = imread(path)
-        I_gray = np.sum(I, axis=2) / 3
-        plt.subplot(2, 1, 1)
-        plt.imshow(I_gray, cmap='gray')
-        
-        I_mask = treshold_mask(I_gray, old_otsu_treshold(I_gray, num_of_bins))
-        plt.subplot(2, 1, 2)
-        plt.imshow(I_mask, cmap='gray')
+    white_background_mask = np.ones(new_shape) - I_3chan_mask
 
-        plt.show()
+    I_masked_three_channel = I_three_channel * I_3chan_mask
+    I_masked_three_channel = I_masked_three_channel + white_background_mask
+    
+    return I_masked_three_channel
+
+
+
 
 
 # Testne funkcije:
 
-def plot_both_types_of_histograms(I_gray, num_of_bins = 100):
-    plt.clf()
-    
-    H = myhist(I_gray, num_of_bins)
-    plt.subplot(2, 1, 1)
-    
-    plt.title("Excercise 2, task (c):")
-    print("Both types of histograms for image bird.jpg. Upper historgram is myhist, lower one is myhist_dynamic.")
-    plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
-    # print(H)
 
-    H = myhist_dynamic(I_gray, num_of_bins)
-    plt.subplot(2, 1, 2)
-    # plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
-    plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
-    # print(H)
-    plt.show()
 
-def otsu_test(num_of_bins=256):
-    
-    img_names = ["umbrellas.jpg", "bird.jpg", "candy.jpg", "eagle.jpg", "mask.png"]
-    for name in img_names:
-        path = ".\\images\\" + name
-        I = imread(path)
-        I_gray = np.sum(I, axis=2) / 3
-        plt.subplot(2, 1, 1)
-        plt.imshow(I_gray, cmap='gray')
-        
-        I_mask = treshold_mask(I_gray, otsu_treshold(I_gray, num_of_bins))
-        plt.subplot(2, 1, 2)
-        plt.imshow(I_mask, cmap='gray')
 
-        plt.show()
-
-def otsu_test_moje_slike(num_of_bins=1000):
-    
-    img_names = ["temna.jpg", "srednja.jpg", "svetla.jpg", "20231023_181600.jpg"]
-    for name in img_names:
-        path = ".\\moje_slike\\" + name
-        I = imread(path)
-        I_gray = np.sum(I, axis=2) / 3
-        plt.subplot(2, 1, 1)
-        plt.imshow(I_gray, cmap='gray')
-        
-        I_mask = treshold_mask(I_gray, otsu_treshold(I_gray, num_of_bins))
-        plt.subplot(2, 1, 2)
-        plt.imshow(I_mask, cmap='gray')
-
-        plt.show()
 
 def made_for_understanding_mydynamic_hist(I_gray):
 
@@ -421,56 +406,45 @@ def made_for_understanding_mydynamic_hist(I_gray):
     # print(H)
     # plt.show()
 
-
-
-def erosion(I_gray, n=5):
-    SE = np.ones((n,n)) # create a square structuring element
-    I_eroded = cv2.erode(I_gray, SE)
-    return I_eroded
-
-def dilation(I_gray, n=5):
-    SE = np.ones((n,n)) # create a square structuring element
-    I_dilated = cv2.dilate(I_gray, SE)
-    return I_dilated
-
-def opening(I_gray, n=5):
-    I_opened = dilation(erosion(I_gray, n), n)
-    return I_opened
-
-def closing(I_gray, n=5):
-    I_closed = erosion(dilation(I_gray, n), n)
-    return I_closed
-
-
-
-
-def show(I):
-    plt.imshow(I, cmap='gray')
-    plt.show()
-
-
-def invert_mask(I_mask):
-    new_mask = 1-I_mask[:,:]
-    return new_mask
-
-def immask(I_three_channel, I_mask):
+def otsu_showcase_moje_slike(num_of_bins=256):
     
-    new_shape = (I_mask.shape[0], I_mask.shape[1], 3)
-    I_3chan_mask = np.zeros(new_shape)
-    
-    for i in range(3):
-        I_3chan_mask[:,:,i] = I_mask[:,:]
-    # print(I_3chan_mask)
+    img_names = ["temna.jpg", "srednja.jpg", "svetla.jpg", "20231023_181600.jpg"]
+    for name in img_names:
+        path = ".\\moje_slike\\" + name
+        I = imread(path)
+        I_gray = np.sum(I, axis=2) / 3
+        plt.subplot(2, 1, 1)
+        plt.imshow(I_gray, cmap='gray')
+        
+        I_mask = treshold_mask(I_gray, otsu_treshold(I_gray, num_of_bins))
+        plt.subplot(2, 1, 2)
+        plt.imshow(I_mask, cmap='gray')
 
-    I_masked_three_channel = I_three_channel * I_3chan_mask
-    return I_masked_three_channel
+        plt.show()
+
+
 
 
 
 
 # Task functions:
 
-def show_difference_of_dynamic_myhist():
+def plot_both_types_of_histograms(I_gray, num_of_bins = 100, title=""):
+    plt.clf()
+    
+    H = myhist(I_gray, num_of_bins)
+    plt.subplot(2, 1, 1)
+    
+    plt.title(title)
+    print("Both types of histograms for image bird.jpg. Upper historgram is myhist, lower one is myhist_dynamic.")
+    plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
+    
+    H = myhist_dynamic(I_gray, num_of_bins)
+    plt.subplot(2, 1, 2)
+    plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
+    plt.show()
+
+def show_difference_of_dynamic_myhist(title=""):
     I = np.arange(0.4, 0.7, 0.001)
     num_of_bins = 100
 
@@ -478,7 +452,7 @@ def show_difference_of_dynamic_myhist():
 
     H = myhist(I, num_of_bins)
     plt.subplot(2, 1, 1)
-    plt.title("Excercise 2, task (c): made up image example for myhist and myhist_dynamic")
+    plt.title(title)
     plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
 
     H = myhist_dynamic(I, num_of_bins)
@@ -492,20 +466,37 @@ def plot_myhist_for_3_images(list_of_3_gray_images: list, num_of_bins):
     
     image_list = list_of_3_gray_images
     
-    H = myhist_dynamic(image_list[0], num_of_bins)
+    H = myhist(image_list[0], num_of_bins)
     plt.subplot(3, 1, 1)
-    plt.title("Excercise 2, task (d): num_of_bins" + str(num_of_bins))
+    plt.title("Excercise 2, task (d): num_of_bins = " + str(num_of_bins))
     plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
     
-    H = myhist_dynamic(image_list[1], num_of_bins)
+    H = myhist(image_list[1], num_of_bins)
     plt.subplot(3, 1, 2)
     plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
     
-    H = myhist_dynamic(image_list[2], num_of_bins)
+    H = myhist(image_list[2], num_of_bins)
     plt.subplot(3, 1, 3)
     plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
     
     plt.show()
+
+def otsu_showcase(num_of_bins=256):
+    
+    img_names = ["umbrellas.jpg", "bird.jpg", "candy.jpg", "eagle.jpg", "mask.png"]
+    for name in img_names:
+        path = ".\\images\\" + name
+        I = imread(path)
+        I_gray = np.sum(I, axis=2) / 3
+        plt.title("Excercise 2, task (e): " + name)
+        plt.subplot(2, 1, 1)
+        plt.imshow(I_gray, cmap='gray')
+        
+        I_mask = treshold_mask(I_gray, otsu_treshold(I_gray, num_of_bins))
+        plt.subplot(2, 1, 2)
+        plt.imshow(I_mask, cmap='gray')
+
+        plt.show()
 
 
 
@@ -515,13 +506,10 @@ if True:
     I = imread(".\\images\\umbrellas.jpg")
     imshow(I)
     height, width, channels = I.shape
-    # print(I.shape)
-    # print(I.dtype)
-
+    
 
     # Excercise 1, task (b)
     I_gray = np.sum(I, axis=2) / 3
-    # imshow(I_gray)
     plt.title("Excercise 1, task (b)")
     plt.imshow(I_gray, cmap='gray')
     plt.show()
@@ -534,9 +522,7 @@ if True:
     plt.clf()
     plt.subplot(2, 2, 1)
     plt.title("Excercise 1, task (c)")
-    # print(I_red)
     I_red = cut_rectangle_monochannel(I, (130, 260), (240, 450), 0)
-    # imshow(I_red)
     plt.imshow(I_red)
     plt.subplot(2, 2, 2)
     plt.imshow(I_red, cmap='gray')
@@ -583,7 +569,7 @@ if True:
 
 
 
-if True:    
+if True:
 
     # Excercise 2, task (a)
 
@@ -605,21 +591,14 @@ if True:
     # Excercise 2, task (b)
     desired_num_of_bins = 150
     bird_histogram = myhist(I_bird_gray, desired_num_of_bins)
-    plot_histogram(bird_histogram)
+    plot_histogram(bird_histogram, "Excercise 2, task (b)")
 
 
     # Excercise 2, task (c)
-    plot_both_types_of_histograms(I_bird)
-    show_difference_of_dynamic_myhist()
+    plot_both_types_of_histograms(I_bird, 100, "Excercise 2, task (c)")
+    show_difference_of_dynamic_myhist("Excercise 2, task (c): made up image example for myhist and myhist_dynamic")
     
     
-
-
-    # made_for_understanding_mydynamic_hist(I_bird_gray)
-
-    # test_dynamic_myhist()
-
-
 
     # Excercise 2, task (d)
 
@@ -627,27 +606,24 @@ if True:
     I2 = np.sum(imread(".\\moje_slike\\srednja.jpg"), axis=2) / 3
     I3 = np.sum(imread(".\\moje_slike\\svetla.jpg"), axis=2) / 3
     
-    for num_of_bins in range(10, 311, 30):
+    for num_of_bins in range(30, 256, 70):
         plot_myhist_for_3_images([I1, I2, I3], num_of_bins)
 
 
 
     # Excercise 2, task (e)
 
-    # old_otsu_test()
-
-    otsu_test()
-    # otsu_test_moje_slike()
+    otsu_showcase()
 
 
 
 
-# Excercise 3, task (a)
+    # Excercise 3, task (a)
 if True:
 
     I_maskJpeg = imread(".\\images\\mask.png")
     plt.subplot(2,2,1)
-    plt.title("Basic image:")
+    plt.title("E3, task (a). Basic image:")
     plt.imshow(I_maskJpeg, cmap='gray')
 
     I_maskJpeg_gray = np.sum(I_maskJpeg, axis=2) / 3
@@ -671,70 +647,41 @@ if True:
 
 
 
-# Exercise 3, task (b)
+    # Exercise 3, task (b)
 if True:
     I_bird = imread(".\\images\\bird.jpg")
-    # imshow(I)
-    # height, width, channels = I.shape
-    # print(I.shape)
-    # print(I.dtype)
-
     I_bird_gray = np.sum(I_bird, axis=2) / 3
-    # imshow(I_gray)
-    plt.imshow(I_bird_gray, cmap='gray')
-    plt.show()
-
     I_bird_mask = treshold_mask(I_bird_gray, otsu_treshold(I_bird_gray, 256))
-    # I_bird_mask = treshold_mask(I_gray, 0.3)
+    plt.title("Exercise 3, task (b): initial mask")
     plt.imshow(I_bird_mask, cmap='gray')
     plt.show()
 
     for i in range(3):
-        I_bird_mask = closing(I_bird_mask, 7)
+        I_bird_mask = closing_ellipse(I_bird_mask, 24, 24)
+        plt.title("Exercise 3, task (b): after " + str(i) + "closings ellipse (n=7)")
         plt.imshow(I_bird_mask, cmap='gray')
         plt.show()
 
-        I_bird_mask = opening(I_bird_mask, 7)
-        plt.imshow(I_bird_mask, cmap='gray')
-        plt.show()
 
 
 
 
-# Excercise 3, task (c) and (d)
+    # Excercise 3, task (c) and (d)
 if True:
 
     I_eagle = imread(".\\images\\eagle.jpg")
     I_eagle_gray = np.sum(I_eagle, axis=2) / 3
     I_eagle_mask = treshold_mask(I_eagle_gray, otsu_treshold(I_eagle_gray, 256))
     
-    # I_eagle_mask = invert_mask(I_eagle_mask)
+    I_eagle_mask = invert_mask(I_eagle_mask)
     I_eagle_masked = immask(I_eagle, I_eagle_mask)
-
-    # imshow(I_eagle_masked)
+    plt.title("Excercise 3, task (c) and (d)")
     plt.imshow(I_eagle_masked)
     plt.show()
 
 
 
-    I_eagle = imread(".\\moje_slike\\svetla.jpg")
-    I_eagle_gray = np.sum(I_eagle, axis=2) / 3
-    I_eagle_mask = treshold_mask(I_eagle_gray, otsu_treshold(I_eagle_gray, 256))
-    
-    # I_eagle_mask = invert_mask(I_eagle_mask)
-    I_eagle_masked = immask(I_eagle, I_eagle_mask)
-
-    # imshow(I_eagle_masked)
-    plt.imshow(I_eagle_masked)
-    plt.show()
-
-
-
-
-
-
-
-# Excercise 3, task (e)
+    # Excercise 3, task (e)
 
 if True:
 
@@ -765,7 +712,9 @@ if True:
             I_opened[ix_top:ix_bottom, ix_left:ix_right] = 0
 
             """
-            stats = CC_STAT_LEFT Python: cv.CC_STAT_LEFT
+            stats so oblike (label, COLUMN)
+            Column vrednosti so:
+            CC_STAT_LEFT Python: cv.CC_STAT_LEFT
             The leftmost (x) coordinate which is the inclusive start of the bounding box in the horizontal direction.
             CC_STAT_TOP Python: cv.CC_STAT_TOP
             CC_STAT_WIDTH 
@@ -778,8 +727,8 @@ if True:
             """
             
 
-    imshow(I_opened)
+    imshow(I_opened, "Excercise 3, task (e): mask")
 
-    I_small_coins = immask(I_coins, I_opened)
-    imshow(I_small_coins)
+    I_small_coins = immask_white_background(I_coins, I_opened)
+    imshow(I_small_coins, "Excercise 3, task (e): new image")
 
