@@ -221,6 +221,10 @@ def immask(I_three_channel, I_mask):
 
 
 
+def show(I):
+    plt.imshow(I, cmap='gray')
+    plt.show()
+
 
 
 def test_opps():
@@ -254,9 +258,6 @@ def test_opps():
 
 
 
-def show(I):
-    plt.imshow(I, cmap='gray')
-    plt.show()
 
 
 # Excercise 3, task (a)
@@ -353,47 +354,49 @@ if False:
 
 # Excercise 3, task (e)
 
-I_coins = imread(".\\images\\coins.jpg")
-I_coins_gray = np.sum(I_coins, axis=2) / 3
-I_coins_mask = treshold_mask(I_coins_gray, otsu_treshold(I_coins_gray, 256))
-I_opened = opening(I_coins_mask, 7)
-I_opened = opening(I_opened, 9)
+if True:
 
-I_opened = invert_mask(I_opened)
+    I_coins = imread(".\\images\\coins.jpg")
+    I_coins_gray = np.sum(I_coins, axis=2) / 3
+    I_coins_mask = treshold_mask(I_coins_gray, otsu_treshold(I_coins_gray, 256))
+    I_opened = opening(I_coins_mask, 7)
+    I_opened = opening(I_opened, 9)
 
-I_opened = I_opened.astype('uint8')
-returned_data = cv2.connectedComponentsWithStats(I_opened)
-num_of_components = returned_data[0]
-labels = returned_data[1]
-stats = returned_data[2]
-centroids = returned_data[3]
+    I_opened = invert_mask(I_opened)
 
-for i in range (1, num_of_components):
-    if(stats[(i, cv2.CC_STAT_AREA)] > 700):
-        ix_left = stats[(i, cv2.CC_STAT_LEFT)]
-        ix_right = stats[(i, cv2.CC_STAT_LEFT)] + stats[(i, cv2.CC_STAT_WIDTH)]
-        ix_top = stats[(i, cv2.CC_STAT_TOP)]
-        ix_bottom = stats[(i, cv2.CC_STAT_TOP)] + stats[(i, cv2.CC_STAT_HEIGHT)]
-        
-        # tole pa ne dela for some reason:
-        # I_opened[ix_top:ix_bottom][ix_left:ix_right] = 0
-        I_opened[ix_top:ix_bottom, ix_left:ix_right] = 0
+    I_opened = I_opened.astype('uint8')
+    returned_data = cv2.connectedComponentsWithStats(I_opened)
+    num_of_components = returned_data[0]
+    labels = returned_data[1]
+    stats = returned_data[2]
+    centroids = returned_data[3]
 
-        """
-        stats = CC_STAT_LEFT Python: cv.CC_STAT_LEFT
-        The leftmost (x) coordinate which is the inclusive start of the bounding box in the horizontal direction.
-        CC_STAT_TOP Python: cv.CC_STAT_TOP
-        CC_STAT_WIDTH 
-        Python: cv.CC_STAT_WIDTH
-        The horizontal size of the bounding box.
-        CC_STAT_HEIGHT 
-        Python: cv.CC_STAT_HEIGHT
-        The vertical size of the bounding box.
-        CC_STAT_AREA The total area (in pixels)
-        """
-        
+    for i in range (1, num_of_components):
+        if(stats[(i, cv2.CC_STAT_AREA)] > 700):
+            ix_left = stats[(i, cv2.CC_STAT_LEFT)]
+            ix_right = stats[(i, cv2.CC_STAT_LEFT)] + stats[(i, cv2.CC_STAT_WIDTH)]
+            ix_top = stats[(i, cv2.CC_STAT_TOP)]
+            ix_bottom = stats[(i, cv2.CC_STAT_TOP)] + stats[(i, cv2.CC_STAT_HEIGHT)]
+            
+            # tole pa ne dela for some reason:
+            # I_opened[ix_top:ix_bottom][ix_left:ix_right] = 0
+            I_opened[ix_top:ix_bottom, ix_left:ix_right] = 0
 
-imshow(I_opened)
+            """
+            stats = CC_STAT_LEFT Python: cv.CC_STAT_LEFT
+            The leftmost (x) coordinate which is the inclusive start of the bounding box in the horizontal direction.
+            CC_STAT_TOP Python: cv.CC_STAT_TOP
+            CC_STAT_WIDTH 
+            Python: cv.CC_STAT_WIDTH
+            The horizontal size of the bounding box.
+            CC_STAT_HEIGHT 
+            Python: cv.CC_STAT_HEIGHT
+            The vertical size of the bounding box.
+            CC_STAT_AREA The total area (in pixels)
+            """
+            
 
-I_small_coins = immask(I_coins, I_opened)
-imshow(I_small_coins)
+    imshow(I_opened)
+
+    I_small_coins = immask(I_coins, I_opened)
+    imshow(I_small_coins)
