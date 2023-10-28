@@ -105,7 +105,7 @@ def plot_histogram(histogram, title=""):
     H = histogram
     plt.subplot(1, 1, 1)
     plt.title(title)
-    plt.bar(H[0], H[1], align='center', width=((H[0][1]-H[0][0])/1.2))
+    plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
     plt.show()
 
 def otsu_get_bin(H):
@@ -373,14 +373,14 @@ def made_for_understanding_mydynamic_hist(I_gray):
     H = myhist_dynamic(I_gray, num_of_bins)
     plt.subplot(2, 1, 2)
     plt.bar(range(H.shape[1]), H[1], align='edge')
-    plt.bar(H[0], H[1], align='center', width=((H[0][1]-H[0][0])/1.2))
+    plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
 
     # wtf TO PA POL KR DELA A KAJ
     # AJAAAAAAAAAAAAAAAAAAAAA
     # MATPLOTLIB MA PRIVZETO ŠIRINO STOLPCEV O MOJ BOOOOG
     # IN TO JE TO KAR VIDIMO
     H[0] = H[0]*100
-    plt.bar(H[0], H[1], align='center', width=((H[0][1]-H[0][0])/1.2))
+    plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
     # print(H)
     # plt.show()
 
@@ -398,11 +398,11 @@ def made_for_understanding_mydynamic_hist(I_gray):
 
     H = myhist_dynamic(I_gray, num_of_bins)
     plt.subplot(2, 1, 1)
-    plt.bar(range(H.shape[1]), H[1], align='center', width=((H[0][1]-H[0][0])/1.2))
-    # plt.bar(H[0], H[1], align='center', width=((H[0][1]-H[0][0])/1.2))
+    plt.bar(range(H.shape[1]), H[1], align='center', width=(1/(1.4*H.shape[1])))
+    # plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
 
     plt.subplot(2, 1, 2)
-    plt.bar(H[0], H[1], align='center', width=((H[0][1]-H[0][0])/1.2))
+    plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
     # print(H)
     # plt.show()
 
@@ -436,12 +436,12 @@ def plot_both_types_of_histograms(I_gray, num_of_bins = 100, title=""):
     plt.subplot(2, 1, 1)
     
     plt.title(title)
-    print("Both types of histograms. Upper historgram is myhist, lower one is myhist_dynamic.")
-    plt.bar(H[0], H[1], align='center', width=((H[0][1]-H[0][0])/1.2))
+    print("Both types of histograms for image bird.jpg. Upper historgram is myhist, lower one is myhist_dynamic.")
+    plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
     
     H = myhist_dynamic(I_gray, num_of_bins)
     plt.subplot(2, 1, 2)
-    plt.bar(H[0], H[1], align='center', width=((H[0][1]-H[0][0])/1.2))
+    plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
     plt.show()
 
 def show_difference_of_dynamic_myhist(title=""):
@@ -453,11 +453,11 @@ def show_difference_of_dynamic_myhist(title=""):
     H = myhist(I, num_of_bins)
     plt.subplot(2, 1, 1)
     plt.title(title)
-    plt.bar(H[0], H[1], align='center', width=((H[0][1]-H[0][0])/1.2))
+    plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
 
     H = myhist_dynamic(I, num_of_bins)
     plt.subplot(2, 1, 2)
-    plt.bar(H[0], H[1], align='center', width=((H[0][1]-H[0][0])/1.2))
+    plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
 
     plt.show()
 
@@ -469,15 +469,15 @@ def plot_myhist_for_3_images(list_of_3_gray_images: list, num_of_bins):
     H = myhist(image_list[0], num_of_bins)
     plt.subplot(3, 1, 1)
     plt.title("Excercise 2, task (d): num_of_bins = " + str(num_of_bins))
-    plt.bar(H[0], H[1], align='center', width=((H[0][1]-H[0][0])/1.2))
+    plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
     
     H = myhist(image_list[1], num_of_bins)
     plt.subplot(3, 1, 2)
-    plt.bar(H[0], H[1], align='center', width=((H[0][1]-H[0][0])/1.2))
+    plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
     
     H = myhist(image_list[2], num_of_bins)
     plt.subplot(3, 1, 3)
-    plt.bar(H[0], H[1], align='center', width=((H[0][1]-H[0][0])/1.2))
+    plt.bar(H[0], H[1], align='center', width=(1/(1.4*H.shape[1])))
     
     plt.show()
 
@@ -488,10 +488,8 @@ def otsu_showcase(num_of_bins=256):
         path = ".\\images\\" + name
         I = imread(path)
         I_gray = np.sum(I, axis=2) / 3
-        
-        plt.clf()
-        plt.subplot(2, 1, 1)
         plt.title("Excercise 2, task (e): " + name)
+        plt.subplot(2, 1, 1)
         plt.imshow(I_gray, cmap='gray')
         
         I_mask = treshold_mask(I_gray, otsu_treshold(I_gray, num_of_bins))
@@ -597,16 +595,7 @@ if True:
 
 
     # Excercise 2, task (c)
-    plot_both_types_of_histograms(I_bird_gray, 100, "Excercise 2, task (c): bird.jpg")
-
-    I_bird = imread(".\\images\\bird.jpg")
-    I_bird_gray = np.sum(I_bird, axis=2) / 3
-    
-    I_bird_gray_demaxed = I_bird_gray[I_bird_gray < 0.3] 
-    plot_both_types_of_histograms(I_bird_gray_demaxed, 100, "Excercise 2, task (c): bird.jpg, maxed at 0.3")
-
-    I_bird_gray_demaxed = I_bird_gray * 0.3
-    plot_both_types_of_histograms(I_bird_gray_demaxed, 100, "Excercise 2, task (c): bird.jpg scaled by 0.3")
+    plot_both_types_of_histograms(I_bird, 100, "Excercise 2, task (c)")
     show_difference_of_dynamic_myhist("Excercise 2, task (c): made up image example for myhist and myhist_dynamic")
     
     
@@ -620,15 +609,8 @@ if True:
     for num_of_bins in range(30, 256, 70):
         plot_myhist_for_3_images([I1, I2, I3], num_of_bins)
 
-    I1 = np.sum(imread(".\\moje_slike\\temna_cedevita.jpg"), axis=2) / 3
-    I2 = np.sum(imread(".\\moje_slike\\srednja_cedevita.jpg"), axis=2) / 3
-    I3 = np.sum(imread(".\\moje_slike\\svetla_cedevita.jpg"), axis=2) / 3
-    
-    for num_of_bins in range(30, 256, 70):
-        plot_myhist_for_3_images([I1, I2, I3], num_of_bins)
 
 
-if True:
     # Excercise 2, task (e)
 
     otsu_showcase()
