@@ -674,11 +674,10 @@ if True:
     plt.imshow(I_bird_mask, cmap='gray')
     plt.show()
 
-    for i in range(3):
-        I_bird_mask = closing_ellipse(I_bird_mask, 24, 24)
-        plt.title("Exercise 3, task (b): after " + str(i) + "closings ellipse (n=7)")
-        plt.imshow(I_bird_mask, cmap='gray')
-        plt.show()
+    I_bird_mask = closing_ellipse(I_bird_mask, 24, 24)
+    plt.title("Exercise 3, task (b): closings ellipse (n1 = n2 = 24)")
+    plt.imshow(I_bird_mask, cmap='gray')
+    plt.show()
 
 
 
